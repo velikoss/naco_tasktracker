@@ -20,7 +20,7 @@ class RegisterPage extends StatelessWidget {
       User? user = userCredential.user;
       if (user != null) {
         // Создаем пустой профиль пользователя в Firestore
-        DBConverter.addUser(IUser.User(id: user.email!, currentGroups: Set(), currentTasks: Set()));
+        db.collection("users").add(IUser.User(id: user.email!, currentGroups: Set(), currentTasks: Set()).toJson());
         Navigator.of(context).pushReplacementNamed('/home');
       }
     } catch (e) {

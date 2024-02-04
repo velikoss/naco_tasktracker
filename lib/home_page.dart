@@ -21,15 +21,28 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final Set<Group> groups;
 
-  Future<Set<Group>> getCurrentUserGroups(Set<String> groupIds) async {
+  Future<Set<Group>> getCurrentUserGroups(String id) async {
+    Set<ID>? groupsIDs = (await DBConverter.getUserById(myCurrentUser!.email!))?.currentGroups!;
     Set<Group> groups = Set();
-    for (String groupId in groupIds) {
+    if (groupsIDs == null) {
+      return groups;
+    }
+    for (String groupId in groupsIDs!) {
       var group = await DBConverter.getGroupById(groupId);
       if (group != null) {
         groups.add(group);
       }
     }
     return groups;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    myCurrentUser = FirebaseAuth.instance.currentUser;
+    if (myCurrentUser?.email == null) {
+      Navigator.of(context).pushReplacementNamed('/login');
+    }
   }
 
   @override
@@ -81,27 +94,31 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: myCurrentUser?.email == null ? Center(child: CircularProgressIndicator()) : FutureBuilder<Set<Group>>(
-        future: getCurrentUserGroups(dbUser!.currentGroups!), // Загрузка групп
+        future: getCurrentUserGroups(myCurrentUser!.email!), // Загрузка групп
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
+            print(snapshot.stackTrace);
             return Center(child: Text("Ошибка загрузки групп"));
           }
           if (snapshot.hasData) {
             Set<Group> groups = snapshot.data!;
             // Отображение списка групп
-            return ListView.builder(
-              itemCount: groups.length + 1,
-              itemBuilder: (context, index) {
-                if (index == groups.length) {
-                  return _buildAddGroupButton(context);
-                }
-                Group group = groups.elementAt(index);
-                // Отображение виджета группы
-                return GroupWidget(groupId: group.id, lastTask: '', lastUpdatedTime: null,);
-              },
+            return Container(
+              width: (groups.length + 1) * 320,
+              child: ListView.builder(
+                itemCount: groups.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == groups.length) {
+                    return _buildAddGroupButton(context);
+                  }
+                  Group group = groups.elementAt(index);
+                  // Отображение виджета группы
+                  return GroupWidget(groupId: group.id!, lastTask: '', lastUpdatedTime: DateTime.now(), groupName: group.name??"Групка", userCount: 0,);
+                },
+              ),
             );
           } else {
             return Center(child: Text("Группы не найдены"));
