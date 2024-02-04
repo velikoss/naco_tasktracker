@@ -11,23 +11,39 @@ class TaskDetailsWidget extends StatelessWidget {
     // Здесь должна быть логика получения деталей задачи по taskId
     // Примерный виджет деталей задачи:
 
-    return Card(
-        child: Column(
+    return Scaffold(
+      body: AlertDialog(
+        clipBehavior: Clip.hardEdge,
+        content: Card(
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Установите это, чтобы избежать вытягивания карточки на весь экран
             children: [
-            Text('Task 2', style: Theme.of(context).textTheme.headline6),
-        Text('Assigned to: User'),
-        Text('Deadline: Yesterday 2 PM'),
-        Text('Status: Current Status'),
-        Padding(
-        padding: EdgeInsets.all(8.0),
-          child: Text(
-            'Description',
-            style: Theme.of(context).textTheme.bodyText2,
-          ),
-        ),
+              AppBar(
+                automaticallyImplyLeading: false, // Убираем кнопку "назад"
+                title: Text('Детали задачи', style: Theme.of(context).textTheme.headline6 ),
+                actions: [
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(), // Закрываем диалог
+                  ),
+                ],
+              ),
+              Text('Task 2', style: Theme.of(context).textTheme.headline6),
+              Text('Assigned to: User'),
+              Text('Deadline: Yesterday 2 PM'),
+              Text('Status: Current Status'),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Description',
+                  style: Theme.of(context).textTheme.bodyText2,
+                ),
+              ),
               // Дополнительная информация и действия для задачи
             ],
+          ),
         ),
+      ),
     );
   }
 }

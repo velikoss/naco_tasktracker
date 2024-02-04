@@ -175,7 +175,7 @@ class _HomePageState extends State<HomePage> {
         title: "Task",
         description: "Desc",
         deadline: new DateTime(2024, 1, 1),
-        assignee: 1,
+        assignee: "",
         status: "[e",
         groupId: "0"
     );

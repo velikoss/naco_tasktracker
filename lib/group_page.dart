@@ -58,7 +58,13 @@ class _GroupPageState extends State<GroupPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(group!.name??"Групка")),
+      appBar: AppBar(title: Text(group!.name??"Групка"), actions: [
+        IconButton(
+          padding: EdgeInsets.all(16),
+          icon: Icon(Icons.settings),
+          onPressed: (){},
+        )
+      ], ),
       body: Builder(// Замените на вашу функцию получения задач группы
         builder: (context) {
             return TaskListWidget(groupId: group!.id!,);
@@ -103,4 +109,6 @@ class _GroupPageState extends State<GroupPage> {
       ),
     );
   }
+
+
 }

@@ -8,9 +8,9 @@ class Task {
   String title;
   String? description;
   DateTime? deadline;
-  int? assignee;
+  ID? assignee;
   String? status;
-  String? groupId;
+  ID? groupId;
 
   Task({this.id, this.priority = 0, required this.title, this.description, this.deadline, this.assignee, this.status, this.groupId});
 
@@ -34,21 +34,25 @@ class Task {
       priority: snapshot['priority'],
       title: snapshot['title'],
       description: snapshot['description'],
-      deadline: snapshot['deadline'] != null ? DateTime.fromMillisecondsSinceEpoch(snapshot['deadline']) : null,
+      // Используйте Timestamp.toDate() для преобразования в DateTime
+      deadline: snapshot['deadline'] != null ? (snapshot['deadline'] as Timestamp).toDate() : null,
       assignee: snapshot['assignee'],
       status: snapshot['status'],
       groupId: snapshot['groupId'],
     );
   }
 
+
   static Task fromJson(Map<String, dynamic> json) => Task(
     id: json['id'],
     priority: json['priority'],
     title: json['title'],
     description: json['description'],
-    deadline: json['deadline'] != null ? DateTime.fromMillisecondsSinceEpoch(json['deadline']) : null,
+    // Проверьте, является ли значение Timestamp, и преобразуйте его соответствующим образом
+    deadline: json['deadline'] != null ? (json['deadline'] is Timestamp ? json['deadline'].toDate() : DateTime.fromMillisecondsSinceEpoch(json['deadline'])) : null,
     assignee: json['assignee'],
     status: json['status'],
     groupId: json['groupId'],
   );
+
 }

@@ -1,12 +1,15 @@
 import 'dart:html';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:naco_tasktracker/db.dart';
 
 import '../models/Group.dart';
 import '../models/Task.dart';
 import 'TaskDetailsWidget.dart';
+import 'TaskWidget.dart';
 
 class TaskListWidget extends StatefulWidget {
   final String groupId;
@@ -24,7 +27,9 @@ class _TaskListWidgetState extends State<TaskListWidget> {
   @override
   void initState() {
     super.initState();
-    _loadTasks();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTasks();
+    });
   }
 
   _loadTasks() async {
@@ -33,6 +38,7 @@ class _TaskListWidgetState extends State<TaskListWidget> {
     for (String taskID in group!.tasks!) {
       Task? task = await DBConverter.getTaskById(taskID);
       if (task != null) {
+        task.id = taskID;
         loadedTasks.add(task);
       }
     }
@@ -51,16 +57,10 @@ class _TaskListWidgetState extends State<TaskListWidget> {
         itemCount: tasks.length,
         itemBuilder: (context, index) {
           Task task = tasks[index];
-          return ListTile(
-            title: Text(task.title),
-            subtitle: Text(task.description??""),
-            // Остальные свойства ListTile...
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TaskDetailsWidget(taskId: task.id!,),
-              ),
-            ),
+          return TaskWidget(
+            title: task.title,
+            assignedTo: (task.assignee == null ? "Not assigned to anyone" : task.assignee == FirebaseAuth.instance.currentUser?.email! ? "Assigned to You" : "Assigned to Other"),
+            isAssignedToYou: (task.assignee??"") == FirebaseAuth.instance.currentUser?.email!, id: task.id!,
           );
         },
       ),
@@ -75,23 +75,73 @@ class _TaskListWidgetState extends State<TaskListWidget> {
   void _showAddTaskDialog(BuildContext context) {
     TextEditingController titleController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
+    int? selectedPriority; // Для хранения выбранного приоритета
+    DateTime? selectedDeadline; // Для хранения выбранного дедлайна
+
+    // Функция для отображения DatePicker
+    _selectDate(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDeadline ?? DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2101),
+      );
+      if (picked != null && picked != selectedDeadline) {
+        setState(() {
+          selectedDeadline = picked;
+        });
+      }
+    }
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Добавить задачу'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Название'),
-            ),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(labelText: 'Описание'),
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Название'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(labelText: 'Описание'),
+              ),
+              DropdownButtonFormField<int>(
+                value: selectedPriority,
+                items: List<DropdownMenuItem<int>>.generate(
+                  5,
+                      (int index) => DropdownMenuItem(
+                    value: index + 1,
+                    child: Text('Приоритет ${index + 1}'),
+                  ),
+                ),
+                onChanged: (int? newValue) {
+                  setState(() {
+                    selectedPriority = newValue;
+                  });
+                },
+                decoration: const InputDecoration(labelText: 'Приоритет'),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      selectedDeadline == null
+                          ? 'Выберите дедлайн'
+                          : 'Дедлайн: ${selectedDeadline!.toLocal()}'.split(' ')[0],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _selectDate(context),
+                    child: const Text('Выбрать дату'),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -101,7 +151,12 @@ class _TaskListWidgetState extends State<TaskListWidget> {
           TextButton(
             child: const Text('Добавить'),
             onPressed: () {
-              _addTask(titleController.text, descriptionController.text);
+              _addTask(
+                titleController.text,
+                descriptionController.text,
+                selectedPriority ?? 1, // Установите значение по умолчанию, если не выбрано
+                selectedDeadline ?? DateTime.now(), // Установите значение по умолчанию, если не выбрано
+              );
               Navigator.of(context).pop();
             },
           ),
@@ -110,11 +165,13 @@ class _TaskListWidgetState extends State<TaskListWidget> {
     );
   }
 
-  void _addTask(String title, String description) async {
+  void _addTask(String title, String description, int priority, DateTime deadline) async {
     Task newTask = Task(
       title: title,
       description: description,
-      groupId: widget.groupId
+      priority: priority,
+      deadline: deadline,
+      // Установите остальные свойства задачи
     );
     // Добавление задачи в базу данных
     var doc = await DBConverter.addTask(newTask);
