@@ -7,7 +7,7 @@ class Group {
   ID? id;
   String? name;
   Set<ID>? users;
-  Set<Task>? tasks;
+  Set<ID>? tasks;
 
   Group({this.id, this.name, users, tasks}) {
     this.users = users ?? Set<ID>();
@@ -30,15 +30,15 @@ class Group {
     return Group(
       id: snapshot['id'],
       name: snapshot['name'],
-      users: List<String>.from(snapshot['users']),
-      tasks: List<int>.from(snapshot['tasks']),
+      users: Set<ID>.from(snapshot['users']),
+      tasks: Set<ID>.from(snapshot['tasks']),
     );
   }
 
   static Group fromJson(Map<String, dynamic> json) => Group(
     id: json['id'],
     name: json['name'],
-    users: List<String>.from(json['users'] ?? []),
-    tasks: List<int>.from(json['tasks'] ?? []),
+    users: Set<ID>.from(json['users'] ?? []),
+    tasks: Set<ID>.from(json['tasks'] ?? []),
   );
 }

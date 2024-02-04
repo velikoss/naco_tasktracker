@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:naco_tasktracker/group_page.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ThemeProvider.dart';
@@ -50,6 +51,7 @@ class MyApp extends StatelessWidget {
       darkTheme: themeProvider.themeData.copyWith(
         textTheme: Theme.of(context).textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white, fontFamily: 'system-ui'),
       ),
+      themeMode: ThemeMode.light,
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -69,6 +71,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomePage(),
         '/edit_profile': (context) => EditProfilePage(), // Добавьте новый маршрут
         '/create_group': (context) => CreateGroupPage(),
+        '/group': (context) => GroupPage(groupId: "sosi)))"),
       },
     );
   }

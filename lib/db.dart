@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'main.dart';
 import 'models/Group.dart';
 import 'models/GroupUser.dart';
 import 'models/Task.dart';
@@ -73,23 +74,38 @@ class DBConverter {
     return db.collection("groupUsers").add(groupUserToDocument(groupUser));
   }
 
-  static Future<User?> getUserById(String id) async {
+  static Future<User?> getUserById(ID id) async {
     var doc = await db.collection("users").doc(id).get();
     return doc.exists ? User.fromJson(doc.data() as Map<String, dynamic>) : null;
   }
 
-  static Future<Group?> getGroupById(String id) async {
+  static Future<Group?> getGroupById(ID id) async {
     var doc = await db.collection("groups").doc(id).get();
     return doc.exists ? Group.fromJson(doc.data() as Map<String, dynamic>) : null;
   }
 
-  static Future<Task?> getTaskById(String id) async {
+  static Future<Task?> getTaskById(ID id) async {
     var doc = await db.collection("tasks").doc(id).get();
     return doc.exists ? Task.fromJson(doc.data() as Map<String, dynamic>) : null;
   }
 
-  static Future<GroupUser?> getGroupUserById(String id) async {
+  static Future<GroupUser?> getGroupUserById(ID id) async {
     var doc = await db.collection("groupUsers").doc(id).get();
     return doc.exists ? GroupUser.fromJson(doc.data() as Map<String, dynamic>) : null;
+  }
+
+  Future<void> whenTaskCompleted(ID currentUserID, int taskPriority) async {
+    int curBalance = (await DBConverter.getGroupUserById(currentUserID))!.balance;
+    await db.collection("groupusers").doc(currentUserID).update({"balance": curBalance + (taskPriority << 2)});
+  }
+
+  Future<bool> whenUserBuySomething(ID currentUserID, int cost) async {
+    int curBalance = (await DBConverter.getGroupUserById(currentUserID))!.balance;
+    if (cost <= curBalance) {
+      await db.collection("groupusers").doc(currentUserID).update({"balance": curBalance - cost});
+      return true;
+    } else {
+      return false;
+    }
   }
 }

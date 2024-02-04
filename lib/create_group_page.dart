@@ -22,6 +22,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   Future<void> createGroup(BuildContext context) async {
     final CollectionReference groups = FirebaseFirestore.instance.collection('groups');
     try {
+
       Group group = Group(
         name: groupNameController.text,
       );
@@ -38,11 +39,11 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       group.users?.add(groupUserRef.id);
       groupRef.update({"users": group.users});
 
-      IUser.User user = (await DBConverter.getUserById(myCurrentUser!.email!))!;
-      user.currentGroups?.add(group.id!);
+      IUser.User user = (await DBConverter.getUserById(FirebaseAuth.instance.currentUser!.email!))!;
+      user.currentGroups?.add(groupRef.id!);
+      db.collection("users").doc(FirebaseAuth.instance.currentUser!.email!).update({"currentGroups": user.currentGroups?.toList()});
 
       Navigator.of(context).pushReplacementNamed("/home");
-
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error creating group: $e")));
     }

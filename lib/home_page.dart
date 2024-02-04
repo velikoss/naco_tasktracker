@@ -108,7 +108,9 @@ class _HomePageState extends State<HomePage> {
             // Отображение списка групп
             return Container(
               width: (groups.length + 1) * 320,
+              height: 400,
               child: ListView.builder(
+                scrollDirection: Axis.horizontal,
                 itemCount: groups.length + 1,
                 itemBuilder: (context, index) {
                   if (index == groups.length) {
@@ -129,6 +131,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildAddGroupButton(BuildContext context) {
+    bool isDarkTheme = Provider.of<ThemeProvider>(context).themeData.brightness == ThemeData.dark().brightness;
+
     return InkWell(
       onTap: () {
         Navigator.of(context).push(
@@ -141,7 +145,7 @@ class _HomePageState extends State<HomePage> {
         margin: EdgeInsets.all(10.0),
         padding: EdgeInsets.all(20.0),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkTheme ? Color.fromARGB(100, 116, 109, 105) : Colors.white,
           borderRadius: BorderRadius.circular(20.0),
           boxShadow: [
             BoxShadow(
