@@ -46,9 +46,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Firebase Auth',
       theme: themeProvider.themeData.copyWith(
+        primaryTextTheme: Theme.of(context).textTheme.apply(bodyColor: Colors.black, displayColor: Colors.black, fontFamily: 'system-ui'),
         textTheme: Theme.of(context).textTheme.apply(bodyColor: Colors.black, displayColor: Colors.black, fontFamily: 'system-ui'),
       ),
       darkTheme: themeProvider.themeData.copyWith(
+        primaryTextTheme: Theme.of(context).textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white, fontFamily: 'system-ui'),
         textTheme: Theme.of(context).textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white, fontFamily: 'system-ui'),
       ),
       themeMode: ThemeMode.light,

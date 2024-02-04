@@ -5,7 +5,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:naco_tasktracker/db.dart';
+import 'package:provider/provider.dart';
 
+import '../ThemeProvider.dart';
+import '../group_page.dart';
 import '../models/Group.dart';
 import '../models/Task.dart';
 import 'TaskDetailsWidget.dart';
@@ -23,6 +26,7 @@ class TaskListWidget extends StatefulWidget {
 class _TaskListWidgetState extends State<TaskListWidget> {
   List<Task> tasks = [];
   bool isReady = false;
+  late bool isDarkTheme;
 
   @override
   void initState() {
@@ -50,15 +54,18 @@ class _TaskListWidgetState extends State<TaskListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    isDarkTheme = Provider.of<ThemeProvider>(context).themeData.brightness == ThemeData.dark().brightness;
+
     return isReady ?  Scaffold(
       body: tasks.isEmpty
-          ? const Center(child: Text("Нет задач"))
+          ? Center(child: Text("Нет задач", style: Theme.of(context).textTheme.displayMedium?.copyWith(color: isDarkTheme ? Colors.white : Colors.black),))
           : ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
           Task task = tasks[index];
           return TaskWidget(
             title: task.title,
+            task: task,
             assignedTo: (task.assignee == null ? "Not assigned to anyone" : task.assignee == FirebaseAuth.instance.currentUser?.email! ? "Assigned to You" : "Assigned to Other"),
             isAssignedToYou: (task.assignee??"") == FirebaseAuth.instance.currentUser?.email!, id: task.id!,
           );
@@ -96,7 +103,7 @@ class _TaskListWidgetState extends State<TaskListWidget> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Добавить задачу'),
+        title: Text('Добавить задачу', style: Theme.of(context).textTheme.displayMedium?.copyWith(color: isDarkTheme ? Colors.white : Colors.black)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -112,7 +119,7 @@ class _TaskListWidgetState extends State<TaskListWidget> {
               DropdownButtonFormField<int>(
                 value: selectedPriority,
                 items: List<DropdownMenuItem<int>>.generate(
-                  5,
+                  10,
                       (int index) => DropdownMenuItem(
                     value: index + 1,
                     child: Text('Приоритет ${index + 1}'),
@@ -132,6 +139,7 @@ class _TaskListWidgetState extends State<TaskListWidget> {
                       selectedDeadline == null
                           ? 'Выберите дедлайн'
                           : 'Дедлайн: ${selectedDeadline!.toLocal()}'.split(' ')[0],
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: isDarkTheme ? Colors.white : Colors.black),
                     ),
                   ),
                   TextButton(
@@ -146,7 +154,12 @@ class _TaskListWidgetState extends State<TaskListWidget> {
         actions: [
           TextButton(
             child: const Text('Отмена'),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => GroupPage(groupId: widget.groupId)),
+              );
+            },
           ),
           TextButton(
             child: const Text('Добавить'),
@@ -158,6 +171,9 @@ class _TaskListWidgetState extends State<TaskListWidget> {
                 selectedDeadline ?? DateTime.now(), // Установите значение по умолчанию, если не выбрано
               );
               Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => GroupPage(groupId: widget.groupId)),
+              );
             },
           ),
         ],

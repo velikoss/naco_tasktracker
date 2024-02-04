@@ -7,14 +7,12 @@ import '../ThemeProvider.dart';
 class GroupWidget extends StatelessWidget {
   final String groupId;
   final String groupName;
-  final String lastTask;
   final DateTime lastUpdatedTime;
   final int userCount;
 
   GroupWidget({
     required this.groupId,
     required this.groupName,
-    required this.lastTask,
     required this.lastUpdatedTime,
     required this.userCount,
   });
@@ -51,8 +49,6 @@ class GroupWidget extends StatelessWidget {
            crossAxisAlignment: CrossAxisAlignment.start,
            children: [
              Text(groupName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDarkTheme ? Colors.white : Colors.black)),
-             SizedBox(height: 10),
-             Text('Last task assigned to user: $lastTask', style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black)),
              SizedBox(height: 10),
              Text('Last updated time: ${lastUpdatedTime.toLocal()}', style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black)),
              SizedBox(height: 10),

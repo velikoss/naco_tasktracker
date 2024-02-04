@@ -1,5 +1,7 @@
 import 'dart:html';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:naco_tasktracker/main.dart';
@@ -8,6 +10,7 @@ import 'package:naco_tasktracker/widgets/TaskListWidget.dart';
 
 import 'db.dart';
 import 'models/Group.dart';
+import 'models/GroupUser.dart';
 import 'models/Task.dart';
 
 class GroupPage extends StatefulWidget {
@@ -21,6 +24,7 @@ class GroupPage extends StatefulWidget {
 
 class _GroupPageState extends State<GroupPage> {
   Group? group;
+  GroupUser? groupUser;
   bool isLoading = true;
 
   get userRole => "owner";
@@ -33,6 +37,12 @@ class _GroupPageState extends State<GroupPage> {
 
   Future<void> _loadGroupData() async {
     Group? loadedGroup = await DBConverter.getGroupById(widget.groupId);
+    final QuerySnapshot userSnapshot = await db
+        .collection('groupUsers')
+        .where('id', isEqualTo: FirebaseAuth.instance.currentUser?.email!)
+        .where('groupId', isEqualTo: group?.id)
+        .get();
+    groupUser = await DBConverter.getGroupUserById(userSnapshot.docs.last.id);
     if (mounted) {
       setState(() {
         group = loadedGroup;
@@ -59,6 +69,12 @@ class _GroupPageState extends State<GroupPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(group!.name??"Групка"), actions: [
+        Row(
+          children: [
+            Text(groupUser!.balance.toString(), style: TextStyle(fontSize: 20),),
+            Icon(Icons.star)
+          ],
+        ),
         IconButton(
           padding: EdgeInsets.all(16),
           icon: Icon(Icons.settings),

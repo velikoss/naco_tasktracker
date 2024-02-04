@@ -94,15 +94,15 @@ class DBConverter {
     return doc.exists ? GroupUser.fromJson(doc.data() as Map<String, dynamic>) : null;
   }
 
-  Future<void> whenTaskCompleted(ID currentUserID, int taskPriority) async {
+  static Future<void> whenTaskCompleted(ID currentUserID, int taskPriority) async {
     int curBalance = (await DBConverter.getGroupUserById(currentUserID))!.balance;
-    await db.collection("groupusers").doc(currentUserID).update({"balance": curBalance + (taskPriority << 2)});
+    await db.collection("groupUsers").doc(currentUserID).update({"balance": curBalance + (taskPriority)});
   }
 
-  Future<bool> whenUserBuySomething(ID currentUserID, int cost) async {
+  static Future<bool> whenUserBuySomething(ID currentUserID, int cost) async {
     int curBalance = (await DBConverter.getGroupUserById(currentUserID))!.balance;
     if (cost <= curBalance) {
-      await db.collection("groupusers").doc(currentUserID).update({"balance": curBalance - cost});
+      await db.collection("groupUsers").doc(currentUserID).update({"balance": curBalance - cost});
       return true;
     } else {
       return false;

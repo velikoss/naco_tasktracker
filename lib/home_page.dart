@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> {
                   }
                   Group group = groups.elementAt(index);
                   // Отображение виджета группы
-                  return GroupWidget(groupId: group.id!, lastTask: '', lastUpdatedTime: DateTime.now(), groupName: group.name??"Групка", userCount: 0,);
+                  return GroupWidget(groupId: group.id!, lastUpdatedTime: DateTime.now(), groupName: group.name??"Групка", userCount: group.users!.length,);
                 },
               ),
             );
